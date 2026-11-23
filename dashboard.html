@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KineticPose Monitor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#030a33;--panel:#0a1650;--line:#1b2a7a;--cream:#e8dfc0;--card:#d3cbb0;--red:#8e0010;--pink:#f5a8a0;--green:#5a7a38;--lime:#a7c77a;--ink:#07103f;--serif:"Newsreader",Georgia,"Times New Roman",serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--bg);color:var(--cream);font:500 15px/1.4 var(--serif);min-height:100%}
+button,select{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+.top{display:flex;align-items:center;gap:18px;padding:14px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand h1{font-size:26px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.dot{width:10px;height:10px;border-radius:50%;background:#6c8070;display:inline-block}
+.src{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 12px}
+.src select{background:transparent;border:0;font-weight:700}
+.src option{background:var(--panel)}
+.pill{border:1px solid #3d5a3a;background:#0e2a2a;color:var(--lime);border-radius:99px;padding:5px 14px;font-weight:700;font-size:13px;white-space:nowrap}
+.pill.bad{color:var(--pink);border-color:#7a2a2a;background:#2a0e18}
+.sos{background:var(--red);border:1px solid #c0303c;border-radius:4px;padding:10px 20px;font-weight:700;box-shadow:0 0 14px #8e001055}
+.alert{background:var(--red);display:flex;align-items:center;gap:22px;padding:14px 24px;flex-wrap:wrap;border-bottom:1px solid #b02030}
+.alert[hidden]{display:none}
+.alert h2{font-size:34px;letter-spacing:.06em;text-transform:uppercase;color:var(--pink);white-space:nowrap}
+.alert p{flex:1;min-width:240px;font-weight:700}
+.alert .acts,.cg .acts{display:flex;gap:10px;flex-wrap:wrap}
+.b{border:0;border-radius:4px;padding:11px 18px;font-weight:700}
+.navy{background:#252f68;color:var(--cream)}.cream{background:var(--cream);color:var(--ink)}.pink{background:var(--pink);color:#5a0008}
+@media (prefers-reduced-motion:no-preference){.alert:not([hidden]) h2{animation:pulse 1.2s ease-in-out infinite}}
+@keyframes pulse{50%{opacity:.55}}
+main{display:grid;grid-template-columns:minmax(0,1fr) 500px;gap:24px;padding:24px;align-items:start}
+@media(max-width:1100px){main{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+.left{display:grid;gap:20px}
+.hud{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.rec{border:1px solid var(--line);border-radius:4px;padding:6px 12px;font-weight:700;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rec b{color:var(--pink)}.rec small{font:500 12px var(--mono);color:#9aa6d8}
+.chips{display:flex;gap:10px;flex-wrap:wrap}.chip{border:1px solid var(--line);border-radius:4px;padding:6px 12px;font-weight:700;color:var(--lime)}
+.stage{position:relative;aspect-ratio:16/9;background:
+ linear-gradient(#1b2a7a33 1px,transparent 1px) 0 0/25% 25%,linear-gradient(90deg,#1b2a7a33 1px,transparent 1px) 0 0/12.5% 100%,#02082a;border-radius:6px;overflow:hidden}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%}
+.stage video{object-fit:contain;background:#000}
+.clock{position:absolute;left:10px;top:8px;font:500 12px var(--mono);color:#cfd6ff;text-shadow:0 1px 3px #000;z-index:2}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.tg{background:#0d1c62;border:1px solid var(--line);border-radius:4px;padding:8px 14px;font-weight:700;display:flex;gap:10px;align-items:center}
+.tg i{width:7px;height:7px;border-radius:50%;background:#556;display:block}.tg.on i{background:var(--lime)}
+#ang{margin-left:auto;font-weight:700;font-size:13px}
+#fs{background:#0d1c62;border:1px solid var(--line);border-radius:4px;padding:6px 10px}
+.cls h2,.cg h2,.lg h2{font-size:24px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1.15}
+.cls h2 small{display:block;font-size:14px;opacity:.7;letter-spacing:.08em}
+.cls header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+.inf{color:var(--lime);font-weight:700;font-size:13px;white-space:nowrap}
+.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media(max-width:700px){.cards{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--card);color:#2c2a22;border-radius:5px;padding:12px;border:1px solid transparent}
+.card .h{display:flex;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.card .h i{width:8px;height:8px;border-radius:50%;background:#777}
+.card strong{display:block;font-size:26px;margin:8px 0 12px}
+.card small{font-size:12px;opacity:.8}
+.card.on{background:var(--green);color:#f1f5e4;border-color:#9ac36a}.card.on .h i{background:#d5f0a8}
+.card.on.fall{background:var(--red);border-color:#ff6a78;box-shadow:0 0 18px #ff2a3f55}.card.on.fall .h i{background:var(--pink)}
+.cg{background:var(--cream);color:var(--ink);border-radius:10px;padding:20px}
+.cg header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.sync{background:var(--green);color:#e9f3d6;border-radius:99px;padding:4px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+.who{display:flex;gap:14px;align-items:center;margin:14px 0 18px}
+.who .ic{width:48px;height:48px;border-radius:8px;background:#cfc6a4;display:grid;place-items:center;font-size:22px}
+.who b{font-size:20px;display:block}.who span{opacity:.75}
+.cg h3{font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
+.cg .acts{flex-direction:column}
+.big{background:var(--green);color:#f3f8e6;font-size:22px;padding:16px;text-align:center}
+.dark{background:var(--ink);color:var(--cream)}
+.lg{margin-top:24px}
+.lg header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.lg a{color:var(--lime);font-weight:700;font-size:13px}
+#log{list-style:none;padding:0}
+#log li{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-top:1px solid var(--line)}
+#log li:first-child{border:0}
+#log li i{width:7px;height:7px;border-radius:50%;background:#667;flex:none;align-self:center}
+#log .crit{color:var(--pink)}#log .crit i{background:var(--pink)}#log .ok i{background:var(--lime)}
+#log time{margin-left:auto;font:500 13px var(--mono);white-space:nowrap}
+#log .empty{opacity:.6}
+</style></head>
+<body>
+<header class="top">
+  <div class="brand"><i class="dot"></i><h1>KineticPose Monitor</h1></div>
+  <label class="src"><select id="src" aria-label="Camera source">
+    <option value="demo">Room 402 – Demo (no backend)</option>
+    <option value="webcam">Room 402 – Webcam</option>
+    <option value="file">Room 402 – Video file</option></select></label>
+  <span class="pill" id="stream">Demo · 0 FPS</span>
+  <button class="sos" id="sos">✱ Emergency Call / Alert Staff</button>
+</header>
+
+<section class="alert" id="alert" hidden role="alert">
+  <h2>⚠ Fall detected</h2>
+  <p id="alertTxt"></p>
+  <div class="acts">
+    <button class="b navy" data-act="Room intercom call requested">Call Room Intercom</button>
+    <button class="b cream" id="ack">Acknowledge &amp; Clear</button>
+    <button class="b pink" data-act="EMS notification requested">Notify EMS</button>
+  </div>
+</section>
+
+<main>
+  <div class="left">
+    <section class="panel">
+      <div class="hud">
+        <div class="rec"><b>● REC</b> CAM-01 <small id="res">–</small></div>
+        <div class="chips"><span class="chip" id="srcChip">Source: Demo</span><span class="chip" id="lat">Vision core: – ms</span></div>
+      </div>
+      <div class="stage" id="stage"><video id="vid" muted playsinline></video><canvas id="ov"></canvas><time class="clock" id="clock"></time></div>
+      <div class="bar">
+        <button class="tg on" data-k="skel"><span>Skeleton lines</span><i></i></button>
+        <button class="tg on" data-k="box"><span>Bounding box</span><i></i></button>
+        <button class="tg on" data-k="nodes"><span>Keypoint nodes</span><i></i></button>
+        <span id="ang">Posture angle: –</span>
+        <button id="fs" aria-label="Fullscreen">⛶</button>
+      </div>
+    </section>
+    <section class="panel cls">
+      <header><h2>AI activity classifier engine<small>Pose classification matrix</small></h2><span class="inf">● Continuous inferencing</span></header>
+      <div class="cards" id="cards"></div>
+    </section>
+  </div>
+
+  <aside>
+    <section class="cg">
+      <header><h2>Caregiver on duty</h2><span class="sync">● Smartwatch synced</span></header>
+      <div class="who"><div class="ic">✚</div><div><b>Sarah Jenkins, RN</b><span>Floor 4 Lead Caregiver · On site</span></div></div>
+      <h3>Immediate interventions</h3>
+      <div class="acts">
+        <button class="b big" data-act="Relatives call requested">Call Relatives</button>
+        <button class="b dark" data-act="Second nurse dispatched to room">Dispatch Second Nurse to Room</button>
+      </div>
+    </section>
+    <section class="panel lg">
+      <header><h2>Recent motion log</h2><a href="#" id="clearLog">Clear</a></header>
+      <ul id="log"><li class="empty">No events yet.</li></ul>
+    </section>
+  </aside>
+</main>
+<input type="file" id="file" accept="video/*" hidden>
+
+<script>
+const RESIDENT = 'Eleanor Vance', ROOM = 'Room 402 – Living Area FOV';   // edit these
+const API = location.protocol === 'file:' ? 'http://localhost:5000' : '';
+const ACTS = [['falling','Fallen'],['sitting','Sitting'],['walking','Walking'],['standing','Standing'],['sleeping','Sleeping']];
+const CONN = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28],[0,11],[0,12]];
+const $ = s => document.querySelector(s), vid = $('#vid'), ov = $('#ov'), ctx = ov.getContext('2d');
+const S = {mode:'demo', show:{skel:1,box:1,nodes:1}, r:null, seen:{}, fall:false, busy:false, fps:0, n:0, t0:performance.now(), dlabel:null, dropped:false, vw:1280, vh:720};
+const hms = () => new Date().toTimeString().slice(0,8);
+
+/* ---------- log, cards, alert ---------- */
+function log(text, lvl='ok'){
+  const ul = $('#log'); ul.querySelector('.empty')?.remove();
+  ul.insertAdjacentHTML('afterbegin', `<li class="${lvl}"><i></i><span>${text}</span><time>${hms()}</time></li>`);
+  while(ul.children.length > 6) ul.lastChild.remove();
+}
+function cards(){
+  $('#cards').innerHTML = ACTS.map(([k,n]) => {
+    const on = S.r?.person && S.r.label === k;
+    const foot = on ? `Detected: ${S.seen[k]}` : S.seen[k] ? `Last: ${S.seen[k]}` : 'Not seen yet';
+    return `<div class="card ${on?'on':''} ${on&&k==='falling'?'fall':''}"><div class="h"><span>${n}</span><i></i></div><strong>${on?'Active':'Inactive'}</strong><small>${foot}</small></div>`;
+  }).join('');
+}
+function setFall(on){
+  if(on === S.fall) return; S.fall = on;
+  $('#alert').hidden = !on;
+  if(on) $('#alertTxt').textContent = `Resident prone on floor (${ROOM}) • Caregiver alert dispatched (${hms()})`;
+  document.title = on ? '⚠ FALL – KineticPose Monitor' : 'KineticPose Monitor';
+}
+
+/* ---------- geometry helpers ---------- */
+const vis = (kp,i) => kp[i] && kp[i][2] > .3;
+function bboxOf(kp){
+  const p = kp.filter(k => k && k[2] > .3); if(p.length < 4) return null;
+  const xs = p.map(k=>k[0]), ys = p.map(k=>k[1]), px = .03, py = .04;
+  return [Math.min(...xs)-px, Math.min(...ys)-py, Math.max(...xs)+px, Math.max(...ys)+py];
+}
+function postureAngle(kp){
+  if(!(vis(kp,11)&&vis(kp,12)&&vis(kp,23)&&vis(kp,24))) return null;
+  const dx = ((kp[11][0]+kp[12][0])-(kp[23][0]+kp[24][0]))/2*S.vw, dy = ((kp[11][1]+kp[12][1])-(kp[23][1]+kp[24][1]))/2*S.vh;
+  return Math.atan2(dx, -dy) * 180 / Math.PI;
+}
+
+/* ---------- apply a prediction ---------- */
+function apply(r){
+  S.r = r;
+  if(r.person){ S.seen[r.label] = hms();
+    const a = postureAngle(r.keypoints);
+    $('#ang').textContent = a == null ? 'Posture angle: –' : `Posture angle: ${a.toFixed(1)}° (${Math.abs(a)<25?'vertical':Math.abs(a)<60?'tilted':'horizontal'})`;
+  } else $('#ang').textContent = 'No person detected';
+  (r.events||[]).forEach(e => log(e.text, e.lvl));
+  $('#lat').textContent = `Vision core: ${r.latency_ms ?? '–'} ms`;
+  setFall(!!r.fall_active); cards(); draw();
+}
+
+/* ---------- drawing ---------- */
+function draw(){
+  const dpr = devicePixelRatio || 1, w = ov.clientWidth, h = ov.clientHeight;
+  if(ov.width !== w*dpr){ ov.width = w*dpr; ov.height = h*dpr; }
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  const r = S.r; if(!r?.person) return;
+  const sc = Math.min(w/S.vw, h/S.vh), rw = S.vw*sc, rh = S.vh*sc, ox = (w-rw)/2, oy = (h-rh)/2;
+  const P = k => [ox + k[0]*rw, oy + k[1]*rh], kp = r.keypoints, fall = r.label === 'falling';
+  const col = fall ? '#f5a8a0' : '#a7c77a';
+  if(S.show.skel){ ctx.strokeStyle = '#a7c77a'; ctx.lineWidth = 2.5; ctx.shadowColor = '#a7c77a'; ctx.shadowBlur = 8;
+    CONN.forEach(([a,b]) => { if(vis(kp,a)&&vis(kp,b)){ const A=P(kp[a]),B=P(kp[b]); ctx.beginPath(); ctx.moveTo(...A); ctx.lineTo(...B); ctx.stroke(); }}); ctx.shadowBlur = 0; }
+  if(S.show.nodes){ ctx.fillStyle = '#a7c77a'; [0,11,12,13,14,15,16,23,24,25,26,27,28].forEach(i => { if(vis(kp,i)){ const [x,y]=P(kp[i]); ctx.beginPath(); ctx.arc(x,y,i===0?7:4,0,7); ctx.fill(); }}); }
+  const bb = bboxOf(kp); if(!bb || !S.show.box) return;
+  const [x1,y1] = P([bb[0],bb[1]]), [x2,y2] = P([bb[2],bb[3]]);
+  ctx.fillStyle = fall ? '#8e001022' : '#5a7a3818'; ctx.fillRect(x1,y1,x2-x1,y2-y1);
+  ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.setLineDash([6,5]); ctx.strokeRect(x1,y1,x2-x1,y2-y1); ctx.setLineDash([]);
+  ctx.lineWidth = 3.5; const L = 16; [[x1,y1,1,1],[x2,y1,-1,1],[x1,y2,1,-1],[x2,y2,-1,-1]].forEach(([x,y,sx,sy]) => { ctx.beginPath(); ctx.moveTo(x,y+sy*L); ctx.lineTo(x,y); ctx.lineTo(x+sx*L,y); ctx.stroke(); });
+  const tag = (txt, y, bg, fg) => { ctx.font = '700 13px Newsreader, Georgia, serif'; const tw = ctx.measureText(txt).width + 20;
+    const tx = Math.min(Math.max(x1,4), w-tw-4), ty = Math.max(y,4); ctx.fillStyle = bg; ctx.fillRect(tx,ty,tw,24); ctx.fillStyle = fg; ctx.fillText(txt, tx+10, ty+17); };
+  tag(`Resident: ${RESIDENT}`, y1-56, '#e8dfc0', '#07103f');
+  tag(`${(ACTS.find(a=>a[0]===r.label)||[0,r.label])[1].toUpperCase()}${fall?' / FALLING':''} (${Math.round((r.confidence||0)*100)}%)`, y1-30, fall ? '#8e0010' : '#5a7a38', '#fff');
+}
+
+/* ---------- demo generator (no backend needed) ---------- */
+const ST = {0:[0,-.52],11:[-.07,-.42],12:[.07,-.42],13:[-.09,-.3],14:[.09,-.3],15:[-.1,-.2],16:[.1,-.2],23:[-.05,0],24:[.05,0],25:[-.05,.25],26:[.05,.25],27:[-.05,.5],28:[.05,.5]};
+function demoStep(){
+  const T = (performance.now()-S.t0)/1000; let label='standing', cx=.5, hipY=.62, ang=0, sit=0, sw=0;
+  if(T<4){} else if(T<9){label='walking'; cx=.25+.5*(T-4)/5; sw=Math.sin(T*7);} else if(T<13){label='sitting'; sit=1; hipY=.7;}
+  else if(T<16){} else { const u=Math.min(1,(T-16)/.6); ang=u*u*84; hipY=.62+.2*u; label=u>.5?'falling':'standing'; }
+  const a = -ang*Math.PI/180, kp = Array(33).fill(null), ev = [];
+  for(const js in ST){ const j = +js; let [x,y] = ST[js];
+    if(sit && j>=25){ x = (j%2?.28:.24); y = j>=27 ? .25 : 0; }
+    if(sw && j>=25){ x += (j%2?1:-1)*sw*(j>=27?.12:.06); }
+    const rx = x*Math.cos(a)-y*Math.sin(a), ry = x*Math.sin(a)+y*Math.cos(a);
+    kp[j] = [cx + rx*.55*9/16, hipY + ry*.55, 1]; }
+  if(T>=16 && !S.dropped){ S.dropped = true; ev.push({text:'Sudden Acceleration / Downward Drop', lvl:'crit'}); }
+  if(label !== S.dlabel){ if(S.dlabel) ev.push(label==='falling' ? {text:'Posture shift: Upright to Lateral', lvl:'crit'} : {text:label==='walking'?'Ambulatory walking (gait normal)':`Activity: ${label[0].toUpperCase()+label.slice(1)}`, lvl:'ok'}); S.dlabel = label; }
+  S.vw = 1280; S.vh = 720; $('#res').textContent = 'demo · simulated skeleton';
+  tick(); apply({person:true, label, confidence:.97+Math.random()*.02, keypoints:kp, fall_active:label==='falling'||S.fall&&T>=16, events:ev, latency_ms:Math.round(10+Math.random()*4)});
+}
+
+/* ---------- live loop (webcam / video file -> Python server) ---------- */
+const cap = document.createElement('canvas');
+function tick(){ S.n++; const now = performance.now(); if(now - (S.fpsT||0) > 1000){ S.fps = S.n; S.n = 0; S.fpsT = now;
+  if(!S.offline) $('#stream').textContent = `${S.mode==='demo'?'Demo':'Live stream'} · ${S.fps} FPS`; } }
+async function sendFrame(){
+  if(S.busy || vid.readyState < 2 || !vid.videoWidth) return; S.busy = true;
+  try{
+    S.vw = vid.videoWidth; S.vh = vid.videoHeight; cap.width = 640; cap.height = Math.round(640*S.vh/S.vw);
+    cap.getContext('2d').drawImage(vid,0,0,cap.width,cap.height);
+    const blob = await new Promise(r => cap.toBlob(r,'image/jpeg',.7));
+    const res = await fetch(API+'/predict',{method:'POST',body:blob}); const r = await res.json();
+    if(r.ok){ S.offline = false; $('#stream').className = 'pill'; $('#res').textContent = `${S.vw}×${S.vh}`; tick(); apply(r); }
+  }catch(e){ S.offline = true; $('#stream').className = 'pill bad'; $('#stream').textContent = 'Backend offline – run monitor_server.py'; }
+  S.busy = false;
+}
+setInterval(() => { S.mode === 'demo' ? demoStep() : sendFrame(); }, 70);
+
+/* ---------- controls ---------- */
+async function setMode(m){
+  S.mode = m; S.r = null; S.offline = false; $('#stream').className = 'pill'; setFall(false); cards(); draw();
+  vid.srcObject?.getTracks().forEach(t=>t.stop()); vid.srcObject = null; vid.removeAttribute('src'); vid.style.display = m==='demo'?'none':'block';
+  $('#srcChip').textContent = 'Source: ' + {demo:'Demo',webcam:'Webcam',file:'Video file'}[m];
+  if(m==='demo'){ S.t0 = performance.now(); S.dlabel = null; S.dropped = false; }
+  if(m==='webcam'){ try{ vid.srcObject = await navigator.mediaDevices.getUserMedia({video:{width:1280,height:720}}); vid.play(); }
+    catch(e){ log('Webcam unavailable – check browser permission','crit'); $('#src').value='demo'; setMode('demo'); } }
+  if(m==='file') $('#file').click();
+}
+$('#src').onchange = e => setMode(e.target.value);
+$('#file').onchange = e => { const f = e.target.files[0]; if(!f){ $('#src').value='demo'; return setMode('demo'); } vid.src = URL.createObjectURL(f); vid.loop = true; vid.play(); };
+$('#ack').onclick = async () => {
+  if(S.mode==='demo'){ S.t0 = performance.now(); S.dlabel = null; S.dropped = false; } else { try{ await fetch(API+'/ack',{method:'POST'}); }catch(e){} }
+  setFall(false); log('Alert acknowledged by staff');
+};
+document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => log(b.dataset.act, 'ok'));
+$('#sos').onclick = () => log('Staff alert sent from console', 'crit');
+document.querySelectorAll('.tg').forEach(b => b.onclick = () => { b.classList.toggle('on'); S.show[b.dataset.k] = +b.classList.contains('on'); draw(); });
+$('#fs').onclick = () => $('#stage').requestFullscreen?.();
+$('#clearLog').onclick = e => { e.preventDefault(); $('#log').innerHTML = '<li class="empty">No events yet.</li>'; };
+setInterval(() => $('#clock').textContent = new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC', 1000);
+addEventListener('resize', draw);
+cards(); setMode('demo');
+</script>
+</body></html>
