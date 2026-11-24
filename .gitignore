@@ -1,0 +1,8 @@
+﻿venv/
+.venv/
+__pycache__/
+dataset/
+*.mp4
+*.avi
+*.pt
+*.pkl
