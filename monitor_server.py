@@ -35,7 +35,7 @@ class Tracker:
         p = np.array([probs.get(c, 0.0) for c in CLS])
         s.ema = p if s.ema is None else 0.6 * s.ema + 0.4 * p
         P = dict(zip(CLS, s.ema))
-        lying_mass = P.get("falling", 0) + P.get("sleeping", 0)
+        lying_mass = P.get("falling", 0)
         s.hist.append((now, torso, hip_y, ext, cx))
         old = next(h for h in s.hist if now - h[0] <= 1.2)
 
@@ -47,28 +47,27 @@ class Tracker:
             if now - s.last_drop_ev > 3:
                 s.ev("Sudden Acceleration / Downward Drop", "crit"); s.last_drop_ev = now
 
-        lying = torso > s.LYING_DEG and lying_mass > 0.45
+        lying = torso > s.LYING_DEG and (lying_mass > 0.45 or torso > 60)
         new = s.label
         if s.fall:
             new = "falling"
-            if torso < s.UPRIGHT_DEG and lying_mass < 0.3:
+            if torso < s.UPRIGHT_DEG and (lying_mass < 0.3 or torso < 35):
                 s.up_t = s.up_t or now
                 if now - s.up_t > 4:
                     s.fall = False; s.ev("Resident upright again - fall cleared"); new = "standing"
             else:
                 s.up_t = None
         elif lying:
-            guess = "falling" if P.get("falling", 0) > P.get("sleeping", 0) else "sleeping"
             if now - s.drop_t < 6:
                 trigger = True
-            elif guess == "falling":
+            elif P.get("falling", 0) > 0.5:
                 s.vote_t = s.vote_t or now; trigger = now - s.vote_t >= 2
             else:
                 s.vote_t = None; trigger = False
             if trigger:
                 s.fall = True; s.ev("Posture shift: Upright to Lateral", "crit"); new = "falling"
             else:
-                new = guess if guess == "sleeping" else s.label
+                new = s.label
         else:
             s.vote_t = None
             up = {k: P.get(k, 0) for k in ("sitting", "standing", "walking")}
@@ -88,7 +87,7 @@ class Tracker:
         else:
             s.cand_n = 0
 
-        grp = lying_mass if s.label in ("falling", "sleeping") else \
+        grp = (lying_mass if lying_mass > 0 else 0.95) if s.label == "falling" else \
             (P.get("sitting", 0) if s.label == "sitting" else P.get("standing", 0) + P.get("walking", 0))
         return s.label, float(min(grp, 0.999))
 
