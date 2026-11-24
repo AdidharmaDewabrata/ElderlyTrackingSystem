@@ -13,7 +13,7 @@ import urllib.request
 import numpy as np
 import cv2
 
-CLASSES = ["falling", "sitting", "standing", "sleeping", "walking"]
+CLASSES = ["falling", "sitting", "standing", "walking"]
 MODEL_URL = ("https://storage.googleapis.com/mediapipe-models/pose_landmarker/"
              "pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task")
 MODEL_PATH = "pose_landmarker_heavy.task"
@@ -148,6 +148,23 @@ def video_frames(path, n=12):
             out.append(fr)
     cap.release()
     return out
+
+
+def extract_video_frames(video_path, frame_step=10, max_frames=None):
+    cap = cv2.VideoCapture(video_path)
+    frames = []
+    frame_idx = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        if frame_idx % frame_step == 0:
+            frames.append(frame)
+            if max_frames and len(frames) >= max_frames:
+                break
+        frame_idx += 1
+    cap.release()
+    return frames
 
 
 def augment(bgr):
